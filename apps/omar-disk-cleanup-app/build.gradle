@@ -1,0 +1,49 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+buildscript {
+  ext {
+    baseImage = "omar-base"
+  }
+  if(System.env.OMAR_COMMON_PROPERTIES)
+  {
+    apply from: System.env.OMAR_COMMON_PROPERTIES
+  }
+  repositories {
+    mavenLocal()
+    maven { url "${ossimMavenProxy}" }
+  }
+}
+apply plugin: "java"
+apply plugin: "maven-publish"
+apply plugin: "maven"
+
+group "io.ossim.omar.apps"
+
+repositories {
+  mavenLocal()
+  maven { url "${ossimMavenProxy}" }
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.codehaus.groovy:groovy-all:2.4.7'
+  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+  compile 'org.postgresql:postgresql:9.4-1205-jdbc42'
+}
+
+jar {
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+
+  manifest {
+    attributes 'Main-Class': "diskCleanup"
+  }
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+    }
+  }
+}
+
