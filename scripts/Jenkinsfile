@@ -33,7 +33,7 @@ node("master"){
     }
 
     try {
-      stage ("Publish App Artifactory")
+      stage ("Publish Artifactory")
       {
           withCredentials([[$class: 'UsernamePasswordMultiBinding',
                             credentialsId: 'artifactoryCredentials',
