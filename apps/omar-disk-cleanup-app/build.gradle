@@ -8,7 +8,7 @@ buildscript {
             "MAINTAINER DigitalGlobe-RadiantBlue",
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar /home/omar",
             "USER root",
-            "RUN yum install -y chronie",
+            "RUN yum install -y cronie",
             "RUN yum install -y initscripts",
             "RUN yum clean all",
             "RUN echo \"*/10 * * * * . \$HOME/.profile; java -jar /home/omar/disk-cleanup/disk-cleanup.jar >> /dev/null 2>&1\" > crontab.txt",
