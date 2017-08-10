@@ -17,7 +17,7 @@ buildscript {
                 echo "export JAVA_HOME=/usr" >> \$HOME/.profile && \
                 crond -p;""",
 
-                "CMD echo "Hello World!"
+                "CMD echo 'Hello World!'"
         ]}
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
