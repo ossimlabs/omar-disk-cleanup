@@ -16,7 +16,6 @@ buildscript {
                 crontab crontab.txt && \
                 echo "export JAVA_HOME=/usr" >> \$HOME/.profile && \
                 crond -p;""",
-
                 "CMD echo 'Hello World!'"
         ]}
     }
