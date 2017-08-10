@@ -21,7 +21,7 @@ buildscript {
                 echo "export POSTGRES_PASSWORD=\$POSTGRES_PASSWORD" >> \$HOME/.profile && \
                 echo "export POSTGRES_USER=\$POSTGRES_USER" >> \$HOME/.profile && \
                 echo "export STAGER_URL=\$STAGER_URL" >> \$HOME/.profile && \
-                crond -p;"""
+                crond -p;""",
                 "CMD while true; do sleep 1000; done;"
         ]}
     }
