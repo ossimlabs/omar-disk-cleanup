@@ -7,6 +7,7 @@ buildscript {
             "FROM ${project.dockerNamespaceUrl}${project.ext.baseImage}:${project.dockerAppTag}",
             "MAINTAINER DigitalGlobe-RadiantBlue",
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar /home/omar",
+            "USER root",
             "CMD while true; do sleep 1m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar >> cheese.txt; done;"
         ]}
     }
