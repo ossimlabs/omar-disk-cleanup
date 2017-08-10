@@ -11,7 +11,7 @@ buildscript {
             """RUN yum install -y cronie && \
                 yum install -y initscripts && \
                 yum clean all""",
-            "USER omar".
+            "USER omar",
             """RUN echo "* * * * * . \$HOME/.profile; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar >> cheese.txt 2>&1" > crontab.txt && \
                 crontab crontab.txt && \
                 echo "export JAVA_HOME=/usr" >> \$HOME/.profile && \
