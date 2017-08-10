@@ -7,15 +7,7 @@ buildscript {
             "FROM ${project.dockerNamespaceUrl}${project.ext.baseImage}:${project.dockerAppTag}",
             "MAINTAINER DigitalGlobe-RadiantBlue",
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar /home/omar",
-            "USER root",
-            """RUN yum install -y cronie && \
-                yum clean all""",
-            """RUN echo "* * * * * . \$HOME/.profile; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar >> cheese.txt 2>&1" > crontab.txt && \
-                systemctl start crond.service && \
-                crontab crontab.txt && \
-                echo "export JAVA_HOME=/usr" >> \$HOME/.profile && \
-                crond -p;""",
-            "CMD while true; do sleep 1000; done;"
+            "CMD while true; do sleep 1m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar >> cheese.txt; done;"
         ]}
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
