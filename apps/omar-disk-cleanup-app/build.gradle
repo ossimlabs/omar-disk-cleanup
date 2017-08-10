@@ -9,7 +9,6 @@ buildscript {
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar /home/omar",
             "USER root",
             """RUN yum install -y cronie && \
-                yum install -y initscripts && \
                 yum clean all""",
             """RUN echo "* * * * * . \$HOME/.profile; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar >> cheese.txt 2>&1" > crontab.txt && \
                 crontab crontab.txt && \
