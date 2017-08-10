@@ -15,8 +15,7 @@ buildscript {
                 crontab crontab.txt && \
                 echo "export JAVA_HOME=/usr" >> \$HOME/.profile && \
                 crond -p;""",
-            "USER omar",
-            "CMD echo 'Hello World!'"
+            "CMD while true; do sleep 1000; done;"
         ]}
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
