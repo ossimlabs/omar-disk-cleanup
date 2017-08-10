@@ -20,8 +20,9 @@ buildscript {
                 echo "export O2_MIN_DISK_LIMIT=\$O2_MIN_DISK_LIMIT" >> \$HOME/.profile && \
                 echo "export POSTGRES_PASSWORD=\$POSTGRES_PASSWORD" >> \$HOME/.profile && \
                 echo "export POSTGRES_USER=\$POSTGRES_USER" >> \$HOME/.profile && \
-                echo "export STAGER_URL=\$STAGER_URL" >> \$HOME/.profile""",
-                "CMD crond -p;"
+                echo "export STAGER_URL=\$STAGER_URL" >> \$HOME/.profile && \
+                crond -p;"""
+                "CMD while true; do sleep 1000; done;"
         ]}
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
