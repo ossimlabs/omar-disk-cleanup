@@ -11,19 +11,13 @@ buildscript {
             """RUN yum install -y cronie && \
                 yum install -y initscripts && \
                 yum clean all && \
-                echo "*/10 * * * * . \$HOME/.profile; java -jar /home/omar/disk-cleanup/disk-cleanup.jar >> /dev/null 2>&1" > crontab.txt && \
+                echo "*/10 * * * * . \$HOME/.profile; java -jar /home/omar/disk-cleanup/disk-cleanup.jar >> cheese.txt 2>&1" > crontab.txt && \
                 crontab crontab.txt && \
-                echo "export JAVA_HOME=\$JAVA_HOME" >> \$HOME/.profile && \
-                echo "export JDBC_CONNECTION_STRING=\$JDBC_CONNECTION_STRING" >> \$HOME/.profile && \
-                echo "export O2_DISK_VOLUME=\$O2_DISK_VOLUME" >> \$HOME/.profile && \
-                echo "export O2_MAX_DISK_LIMIT=\$O2_MAX_DISK_LIMIT" >> \$HOME/.profile && \
-                echo "export O2_MIN_DISK_LIMIT=\$O2_MIN_DISK_LIMIT" >> \$HOME/.profile && \
-                echo "export POSTGRES_PASSWORD=\$POSTGRES_PASSWORD" >> \$HOME/.profile && \
-                echo "export POSTGRES_USER=\$POSTGRES_USER" >> \$HOME/.profile && \
-                echo "export STAGER_URL=\$STAGER_URL" >> \$HOME/.profile && \
+                echo "export JAVA_HOME=/usr" >> \$HOME/.profile &&
                 crond -p;""",
                 "CMD while true; do sleep 1000; done;"
         ]}
+//echo "*/10 * * * * . \$HOME/.profile; java -jar /home/omar/disk-cleanup/disk-cleanup.jar >> /dev/null 2>&1" > crontab.txt && \
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
         apply from: System.env.OMAR_COMMON_PROPERTIES
