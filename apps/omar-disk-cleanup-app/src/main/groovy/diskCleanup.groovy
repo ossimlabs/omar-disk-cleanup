@@ -4,13 +4,13 @@ import static groovyx.net.http.Method.POST
 
 
 // necessary environment variables
-def diskVolume = System.getenv( "O2_DISK_VOLUME" )
-def jdbcUrl = System.getenv( "JDBC_CONNECTION_STRING" )
+def diskVolume = System.getenv( "O2_DISK_VOLUME" ).toString()
+def jdbcUrl = System.getenv( "JDBC_CONNECTION_STRING" ).toString()
 def maxDiskLimit = System.getenv( "O2_MAX_DISK_LIMIT" ) as Double
 def minDiskLimit = System.getenv( "O2_MIN_DISK_LIMIT" ) as Double
-def password = System.getenv( "POSTGRES_PASSWORD" )
-def removeRasterUrl = "${ System.getenv( "STAGER_URL" ) }/dataManager/removeRaster"
-def username = System.getenv( "POSTGRES_USER" )
+def password = System.getenv( "POSTGRES_PASSWORD" ).toString()
+def removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/removeRaster"
+def username = System.getenv( "POSTGRES_USER" ).toString()
 
 
 def totalDiskSpace = new File( diskVolume ).getTotalSpace()
@@ -34,10 +34,10 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
 
         println "Deleting all files associated with ${ filename }..."
         def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
-        //http.request( POST ) { req ->
-        //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
-        //    response.success = { resp, reader -> println "Success: ${ reader }" }
-        //}
+        http.request( POST ) { req ->
+            response.failure = { resp, reader -> println "Failure: ${ reader }" }
+            response.success = { resp, reader -> println "Success: ${ reader }" }
+        }
         println http.properties
 
         def file = new File( filename )
