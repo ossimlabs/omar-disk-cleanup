@@ -6,8 +6,10 @@ buildscript {
         dockerStatementsOverride = {[
             "FROM ${project.dockerNamespaceUrl}${project.ext.baseImage}:${project.dockerAppTag}",
             "MAINTAINER DigitalGlobe-RadiantBlue",
-            "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar /home/omar",
-            "CMD while true; do sleep 1m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar; done;"
+            "WORKDIR /home/omar",
+            "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar .",
+            "RUN echo 'while true; do sleep 10m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar; done;' >> ${project.name}-${buildVersion}-${buildVersionTag}.sh",
+            "CMD sh ${project.name}-${buildVersion}-${buildVersionTag}.sh"
         ]}
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
