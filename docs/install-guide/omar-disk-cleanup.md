@@ -2,19 +2,24 @@
 
 ## Dockerfile
 ```
-FROM omar-ossim-base
-EXPOSE 8080
-RUN mkdir /usr/share/omar
-COPY omar-disk-cleanup-app-1.0.0-SNAPSHOT.jar /usr/share/omar
-RUN chown -R 1001:0 /usr/share/omar
-RUN chown 1001:0 /usr/share/omar
-RUN chmod -R g+rw /usr/share/omar
-RUN find $HOME -type d -exec chmod g+x {} +
-USER 1001
-WORKDIR /usr/share/omar
-CMD java -server -Xms256m -Xmx1024m -Djava.awt.headless=true -XX:+CMSClassUnloadingEnabled -XX:+UseGCOverheadLimit -Djava.security.egd=file:/dev/./urandom -jar omar-disk-cleanup-app-1.0.0-SNAPSHOT.jar
+FROM omar-base
+COPY omar-disk-cleanup-app-1.0.1-SNAPSHOT.jar /home/omar
+CMD while true; do sleep 1m; java -jar /home/omar/omar-disk-cleanup-app-1.0.1-SNAPSHOT.jar; done;
 ```
-Ref: [omar-ossim-base](../../../omar-ossim-base/docs/install-guide/omar-ossim-base/)
+Ref: [omar-base](../../../omar-ossim-base/docs/install-guide/omar-base/)
 
 ## JAR
 [http://artifacts.radiantbluecloud.com/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app](http://artifacts.radiantbluecloud.com/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app)
+
+
+## Configuration
+The following environment variables need to be set for the `omar` user.
+```
+JDBC_CONNECTION_STRING = jdbc:postgresql://<host>:<port>/<database>
+O2_DISK_VOLUME = /data
+O2_MAX_DISK_LIMIT = 0.9
+O2_MIN_DISK_LIMIT = 0.8
+POSTGRES_PASSWORD = <password>
+POSTGRES_USER = <user>
+STAGER_URL = <protocol>://<host>/omar-stager
+```

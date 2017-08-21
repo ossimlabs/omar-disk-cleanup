@@ -6,6 +6,13 @@ buildscript {
         dockerStatementsOverride = {[
             "FROM ${project.dockerNamespaceUrl}${project.ext.baseImage}:${project.dockerAppTag}",
             "MAINTAINER DigitalGlobe-RadiantBlue",
+            """ENV JDBC_CONNECTION_STRING=jdbc:postgresql://host:5432/omar_db \\
+                O2_DISK_VOLUME=/data \\
+                O2_MAX_DISK_LIMIT=0.9 \\
+                O2_MIN_DISK_LIMIT=0.8 \\
+                POSTGRES_PASSWORD=password \\
+                POSTGRES_USER=postgres \\
+                STAGER_URL=http://omar-stager-app:8080/omar-stager""",
             "WORKDIR /home/omar",
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar .",
             "RUN echo 'while true; do sleep 10m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar; done;' >> ${project.name}-${buildVersion}-${buildVersionTag}.sh",
