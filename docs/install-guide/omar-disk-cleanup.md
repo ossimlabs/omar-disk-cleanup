@@ -18,7 +18,7 @@ CMD sh omar-disk-cleanup-app-1.1.0-SNAPSHOT.sh
 Ref: [omar-base](../../../omar-ossim-base/docs/install-guide/omar-base/)
 
 ## JAR
-[http://artifacts.radiantbluecloud.com/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app](http://artifacts.radiantbluecloud.com/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app)
+[https://artifactory.ossim.io/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app](https://artifactory.ossim.io/artifactory/webapp/#/artifacts/browse/tree/General/omar-local/io/ossim/omar/apps/omar-disk-cleanup-app)
 
 
 ## Configuration
