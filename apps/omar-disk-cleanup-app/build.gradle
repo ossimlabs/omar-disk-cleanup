@@ -15,7 +15,7 @@ buildscript {
                 STAGER_URL=http://omar-stager-app:8080/omar-stager""",
             "WORKDIR /home/omar",
             "COPY ${project.name}-${buildVersion}-${buildVersionTag}.jar .",
-            "RUN echo 'while true; do sleep 10m; java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar; done;' >> ${project.name}-${buildVersion}-${buildVersionTag}.sh",
+            "RUN echo 'while true; do java -jar /home/omar/${project.name}-${buildVersion}-${buildVersionTag}.jar; sleep 10m; done;' >> ${project.name}-${buildVersion}-${buildVersionTag}.sh",
             "CMD sh ${project.name}-${buildVersion}-${buildVersionTag}.sh"
         ]}
     }

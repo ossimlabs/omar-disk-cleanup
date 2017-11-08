@@ -32,19 +32,24 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     sql.eachRow( sqlCommand ) {
         def filename = it.filename
 
-        println "Deleting all files associated with ${ filename }..."
-        def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
-        http.request( POST ) { req ->
-            response.failure = { resp, reader -> println "Failure: ${ reader }" }
-            response.success = { resp, reader -> println "Success: ${ reader }" }
-        }
-        println http.properties
+        if ( !it.keep_forever ) {
+            println "Deleting all files associated with ${ filename }..."
+            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
+            http.request( POST ) { req ->
+                response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                response.success = { resp, reader -> println "Success: ${ reader }" }
+            }
+            println http.properties
 
-        def file = new File( filename )
-        if ( file.exists() ) {
-            println "Uh oh! I couldn't delete ${ filename }, so I'm going to stop."
-            sql.close()
-            System.exit( 1 )
+            def file = new File( filename )
+            if ( file.exists() ) {
+                println "Uh oh! I couldn't delete ${ filename }, so I'm going to stop."
+                sql.close()
+                System.exit( 1 )
+            }
+        }
+        else {
+            println "Looks like we are keeping ${ filename } forever."
         }
 
         def usedDiskSpacePercentage = (totalDiskSpace - new File( diskVolume ).getUsableSpace()) / totalDiskSpace as Double
