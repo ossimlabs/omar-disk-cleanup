@@ -28,7 +28,7 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     println "I will try and delete approx. ${ convertBytesToHumanReadable( numberOfBytesToDelete ) } of data..."
 
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
-    def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
+    def sqlCommand = "SELECT filename, keep_forever FROM raster_entry ORDER BY ingest_date ASC;"
     sql.eachRow( sqlCommand ) {
         def filename = it.filename
 
