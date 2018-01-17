@@ -11,6 +11,7 @@
 //==================================================================================================
 
 // TODO: get to run on any node
+def notifyObj
 node("master"){
     def workspaceDir = pwd()
     def appName = "omar-disk-cleanup"
@@ -18,9 +19,6 @@ node("master"){
     env.OMAR_COMMON_PROPERTIES="${workspaceDir}/${omarCommonProjName}/omar-common-properties.gradle"
 
     stage("Checkout"){
-        dir("ossim-ci") {
-            git branch: "${OSSIM_GIT_BRANCH}", url: "${GIT_PUBLIC_SERVER_URL}/ossim-ci.git"
-        }
         dir(appName) {
             git branch: "${OSSIM_GIT_BRANCH}", url: "${GIT_PUBLIC_SERVER_URL}/${appName}.git"
         }
@@ -28,8 +26,15 @@ node("master"){
         dir(omarCommonProjName) {
             git branch: "${OSSIM_GIT_BRANCH}", url: "${GIT_PUBLIC_SERVER_URL}/${omarCommonProjName}.git"
         }
+    }
 
-        notifyObj = load "${workspaceDir}/ossim-ci/jenkins/pipeline/notify.groovy"
+    stage("Download Artifacts"){
+       step ([$class: "CopyArtifact",
+             projectName: "ossim-ci-${OSSIM_GIT_BRANCH}",
+             filter: "ossim-ci-${OSSIM_GIT_BRANCH}.tgz",
+             flatten: true])
+       sh "tar xvfz ossim-ci-${OSSIM_GIT_BRANCH}.tgz"
+       notifyObj = load "${env.WORKSPACE}/ossim-ci/jenkins/pipeline/notify.groovy"
     }
 
     try {
