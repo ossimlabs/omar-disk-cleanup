@@ -39,13 +39,10 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
                 response.failure = { resp, reader -> println "Failure: ${ reader }" }
                 response.success = { resp, reader -> println "Success: ${ reader }" }
             }
-            println http.properties
 
             def file = new File( filename )
             if ( file.exists() ) {
-                println "Uh oh! I couldn't delete ${ filename }, so I'm going to stop."
-                sql.close()
-                System.exit( 1 )
+                println "Uh oh! I couldn't delete ${ filename }, but I'm going to keep going."
             }
         }
         else {
