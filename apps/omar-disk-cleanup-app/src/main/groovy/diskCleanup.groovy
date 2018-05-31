@@ -88,6 +88,7 @@ def convertBytesToHumanReadable( bytes ) {
 }
 
 def deepClean() {
+println diskVolume
     new File( diskVolume ).eachFileRecurse {
         def file = it
         println file.absolutePath
