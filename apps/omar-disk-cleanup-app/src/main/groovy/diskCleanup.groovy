@@ -90,6 +90,7 @@ def convertBytesToHumanReadable( bytes ) {
 def deepClean() {
     new File( diskVolume ).eachFileRecurse {
         def file = it
+        println file.absolutePath
         def lastModified = file.lastModified()
         println lastModified
         println oldestFileDate
