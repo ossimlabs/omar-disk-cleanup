@@ -67,8 +67,8 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     println "Well, I deleted everything I could but it doesn't look like it was enough!"
     sql.close()
 
-    def deepClean = System.getenv( "DEEP_CLEAN" )
-    if ( deepClean && Boolean.parseBoolean( deepClean ) ) {
+    def deepCleanMode = System.getenv( "DEEP_CLEAN" )
+    if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
         deepClean()
     }
 
