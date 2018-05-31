@@ -13,7 +13,7 @@ removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/rem
 username = System.getenv( "POSTGRES_USER" ).toString()
 
 // needed for deep clean mode
-oldestFileDate
+oldestFileDate = null
 
 def totalDiskSpace = new File( diskVolume ).getTotalSpace()
 println "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
