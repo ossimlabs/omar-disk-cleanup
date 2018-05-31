@@ -88,7 +88,7 @@ def convertBytesToHumanReadable( bytes ) {
 }
 
 def deepClean() {
-    new File( diskVolume ).eachFileWithRecurse {
+    new File( diskVolume ).eachFileRecurse {
         def file = it
         def lastModified = file.lastModified()
         println lastModified
