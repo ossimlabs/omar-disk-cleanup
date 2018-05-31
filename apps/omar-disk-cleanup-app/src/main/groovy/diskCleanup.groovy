@@ -40,11 +40,11 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
             }
 
             println "Deleting all files associated with ${ filename }..."
-            //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
-            //http.request( POST ) { req ->
-            //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
-            //    response.success = { resp, reader -> println "Success: ${ reader }" }
-            //}
+            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
+            http.request( POST ) { req ->
+                response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                response.success = { resp, reader -> println "Success: ${ reader }" }
+            }
 
             def file = new File( filename )
             if ( file.exists() ) {
@@ -88,15 +88,17 @@ def convertBytesToHumanReadable( bytes ) {
 }
 
 def deepClean() {
-println diskVolume
+    println "Starting deep clean..."
+
     new File( diskVolume ).eachFileRecurse {
         def file = it
-        println file.absolutePath
+
         def lastModified = file.lastModified()
-        println lastModified
-        println oldestFileDate
         if ( lastModified < oldestFileDate ) {
+            println "Deep cleaning ${ file }..."
             file.delete()
         }
     }
+
+    println "Deep clean complete..."
 }
