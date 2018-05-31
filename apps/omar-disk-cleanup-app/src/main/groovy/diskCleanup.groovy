@@ -4,15 +4,16 @@ import static groovyx.net.http.Method.POST
 
 
 // necessary environment variables
-def diskVolume = System.getenv( "O2_DISK_VOLUME" ).toString()
-def jdbcUrl = System.getenv( "JDBC_CONNECTION_STRING" ).toString()
-def maxDiskLimit = System.getenv( "O2_MAX_DISK_LIMIT" ) as Double
-def minDiskLimit = System.getenv( "O2_MIN_DISK_LIMIT" ) as Double
-def password = System.getenv( "POSTGRES_PASSWORD" ).toString()
-def removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/removeRaster"
-def username = System.getenv( "POSTGRES_USER" ).toString()
+diskVolume = System.getenv( "O2_DISK_VOLUME" ).toString()
+jdbcUrl = System.getenv( "JDBC_CONNECTION_STRING" ).toString()
+maxDiskLimit = System.getenv( "O2_MAX_DISK_LIMIT" ) as Double
+minDiskLimit = System.getenv( "O2_MIN_DISK_LIMIT" ) as Double
+password = System.getenv( "POSTGRES_PASSWORD" ).toString()
+removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/removeRaster"
+username = System.getenv( "POSTGRES_USER" ).toString()
 
-def oldestFileDate
+// needed for deep clean mode
+oldestFileDate
 
 def totalDiskSpace = new File( diskVolume ).getTotalSpace()
 println "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
