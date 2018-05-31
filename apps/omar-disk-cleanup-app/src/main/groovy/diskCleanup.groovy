@@ -39,11 +39,11 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
             }
 
             println "Deleting all files associated with ${ filename }..."
-            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
-            http.request( POST ) { req ->
-                response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                response.success = { resp, reader -> println "Success: ${ reader }" }
-            }
+            //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
+            //http.request( POST ) { req ->
+            //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
+            //    response.success = { resp, reader -> println "Success: ${ reader }" }
+            //}
 
             def file = new File( filename )
             if ( file.exists() ) {
