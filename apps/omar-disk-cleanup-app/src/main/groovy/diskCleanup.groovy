@@ -12,6 +12,7 @@ def password = System.getenv( "POSTGRES_PASSWORD" ).toString()
 def removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/removeRaster"
 def username = System.getenv( "POSTGRES_USER" ).toString()
 
+def oldestFileDate
 
 def totalDiskSpace = new File( diskVolume ).getTotalSpace()
 println "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
@@ -33,6 +34,10 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
         def filename = it.filename
 
         if ( !it.keep_forever ) {
+            if ( !oldestFileDate ) {
+                oldestFileDate = new File( filename ).lastModified()
+            }
+
             println "Deleting all files associated with ${ filename }..."
             def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
             http.request( POST ) { req ->
@@ -61,6 +66,12 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
 
     println "Well, I deleted everything I could but it doesn't look like it was enough!"
     sql.close()
+
+    def deepClean = System.getenv( "DEEP_CLEAN" )
+    if ( deepClean && Boolean.parseBoolean( deepClean ) ) {
+        deepClean()
+    }
+
     System.exit( 1 )
 }
 
@@ -73,4 +84,16 @@ def convertBytesToHumanReadable( bytes ) {
 
 
   return "${ (bytes / Math.pow( unit, exp )).trunc( 2 ) } ${ size }B"
+}
+
+def deepClean() {
+    new File( diskVolume ).eachFileWithRecurse {
+        def file = it
+        def lastModified = file.lastModified()
+        println lastModified
+        println oldestFileDate
+        if ( lastModified < oldestFileDate ) {
+            file.delete()
+        }
+    }
 }
