@@ -29,6 +29,9 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     def numberOfBytesToDelete = (totalDiskSpace - freeDiskSpace) - minDiskLimit * totalDiskSpace
     println "I will try and delete approx. ${ convertBytesToHumanReadable( numberOfBytesToDelete ) } of data..."
 
+    def numberOfBytesCounted = 0
+    def filesToDelete = []
+
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
     def sqlCommand = "SELECT filename, keep_forever FROM raster_entry ORDER BY ingest_date ASC;"
     sql.eachRow( sqlCommand ) {
@@ -39,38 +42,31 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
                 oldestFileDate = new File( filename ).lastModified()
             }
 
-            println "Deleting all files associated with ${ filename }..."
-            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ filename }" )
-            http.request( POST ) { req ->
-                response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                response.success = { resp, reader -> println "Success: ${ reader }" }
-            }
+            filesToDelete.push( filename )
 
             def file = new File( filename )
             if ( file.exists() ) {
-                println "Uh oh! I couldn't delete ${ filename }, but I'm going to keep going."
+                numberOfBytesCounted += file.size()
             }
         }
         else {
             println "Looks like we are keeping ${ filename } forever."
         }
 
-        def usedDiskSpacePercentage = (totalDiskSpace - new File( diskVolume ).getUsableSpace()) / totalDiskSpace as Double
-        println "Disk space being used: ${ (usedDiskSpacePercentage * 100).trunc( 2 ) } %"
-
-        if (usedDiskSpacePercentage < minDiskLimit) {
-            println "I successfully deleted enough data!"
+        if ( numberOfBytesToDelete < numberOfBytesCounted ) {
             sql.close()
+            deleteFiles( filesToDelete )
             System.exit( 0 )
         }
     }
 
-    println "Well, I deleted everything I could but it doesn't look like it was enough!"
+    println "I would have to delete everything and it still wouldn't be enough!"
     sql.close()
 
     def deepCleanMode = System.getenv( "DEEP_CLEAN" )
     if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
         deepClean()
+        System.exit( 0 )
     }
 
     System.exit( 1 )
@@ -85,6 +81,18 @@ def convertBytesToHumanReadable( bytes ) {
 
 
   return "${ (bytes / Math.pow( unit, exp )).trunc( 2 ) } ${ size }B"
+}
+
+def deleteFiles( filenames ) {
+    filenames.eachWithIndex {
+        value, index ->
+        println "Deleting raster entry ${ index } of ${ filenames.size() }: ${ value }..."
+        def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+        http.request( POST ) { req ->
+            response.failure = { resp, reader -> println "Failure: ${ reader }" }
+            response.success = { resp, reader -> println "Success: ${ reader }" }
+        }
+    }
 }
 
 def deepClean() {
