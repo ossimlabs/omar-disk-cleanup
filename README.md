@@ -1,3 +1,3 @@
-# omar-disk-cleanup
+# Omar Disk Cleanup
 
 ...
