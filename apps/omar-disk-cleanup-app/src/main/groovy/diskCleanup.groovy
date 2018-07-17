@@ -33,29 +33,30 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     def filesToDelete = []
 
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
-    def sqlCommand = "SELECT filename, keep_forever FROM raster_entry ORDER BY ingest_date ASC;"
+    def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
     sql.eachRow( sqlCommand ) {
         def filename = it.filename
 
-        if ( !it.keep_forever ) {
-            if ( !oldestFileDate ) {
-                oldestFileDate = new File( filename ).lastModified()
-            }
-
-            filesToDelete.push( filename )
-
-            def file = new File( filename )
-            if ( file.exists() ) {
-                numberOfBytesCounted += file.size()
-            }
+        if ( !oldestFileDate ) {
+            oldestFileDate = new File( filename ).lastModified()
         }
-        else {
-            println "Looks like we are keeping ${ filename } forever."
+
+        filesToDelete.push( filename )
+
+        def file = new File( filename )
+        if ( file.exists() ) {
+            numberOfBytesCounted += file.size()
         }
 
         if ( numberOfBytesToDelete < numberOfBytesCounted ) {
             sql.close()
             deleteFiles( filesToDelete )
+
+            def deepCleanMode = System.getenv( "DEEP_CLEAN" )
+            if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
+                deepClean()
+            }
+
             System.exit( 0 )
         }
     }
@@ -66,10 +67,9 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     def deepCleanMode = System.getenv( "DEEP_CLEAN" )
     if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
         deepClean()
-        System.exit( 0 )
     }
 
-    System.exit( 1 )
+    System.exit( 0 )
 }
 
 
