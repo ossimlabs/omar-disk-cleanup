@@ -103,8 +103,18 @@ def deepClean() {
 
         def lastModified = file.lastModified()
         if ( lastModified < oldestFileDate ) {
-            println "Deep cleaning ${ file }..."
-            file.delete()
+            if ( file.exists() ) {
+                if ( !file.directory || ( file.directory && file.list().size() == 0 ) ) {
+                    println "Deep cleaning ${ file }..."
+                    file.delete()
+                }
+                else {
+                    println "I would delete ${ file.absolutePath } but it has stuff in it."
+                }
+            }
+            else {
+                println "Deep clean marked ${ file.absolutePath } for deletion but it doesn't appear to exist... FYI."
+            }
         }
     }
 
