@@ -12,8 +12,17 @@ password = System.getenv( "POSTGRES_PASSWORD" ).toString()
 removeRasterUrl = "${ System.getenv( "STAGER_URL" ).toString() }/dataManager/removeRaster"
 username = System.getenv( "POSTGRES_USER" ).toString()
 
-// needed for deep clean mode
-oldestFileDate = null
+
+def deleteStaleFiles = System.getenv( "DELETE_STALE_FILES" )
+if ( deleteStaleFiles && Boolean.parseBoolean( deleteStaleFiles ) ) {
+    deleteStaleFiles()
+}
+
+def deleteStaleEntries = System.getenv( "DELETE_STALE_ENTRIES" )
+if ( deleteStaleEntries && Boolean.parseBoolean( deleteStaleEntries ) ) {
+    deleteStaleEntries()
+}
+
 
 def totalDiskSpace = new File( diskVolume ).getTotalSpace()
 println "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
@@ -37,10 +46,6 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
     sql.eachRow( sqlCommand ) {
         def filename = it.filename
 
-        if ( !oldestFileDate ) {
-            oldestFileDate = new File( filename ).lastModified()
-        }
-
         filesToDelete.push( filename )
 
         def file = new File( filename )
@@ -52,22 +57,12 @@ if (usedDiskSpace > totalDiskSpace * maxDiskLimit) {
             sql.close()
             deleteFiles( filesToDelete )
 
-            def deepCleanMode = System.getenv( "DEEP_CLEAN" )
-            if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
-                deepClean()
-            }
-
             System.exit( 0 )
         }
     }
 
     println "I would have to delete everything and it still wouldn't be enough!"
     sql.close()
-
-    def deepCleanMode = System.getenv( "DEEP_CLEAN" )
-    if ( deepCleanMode && Boolean.parseBoolean( deepCleanMode ) ) {
-        deepClean()
-    }
 
     System.exit( 0 )
 }
@@ -95,9 +90,28 @@ def deleteFiles( filenames ) {
     }
 }
 
-def deepClean() {
-    println "Starting deep clean..."
+def deleteStaleEntries() {
+    def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
+    def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
+    sql.eachRow( sqlCommand ) {
+        def filename = it.filename
 
+        def file = new File( filename )
+        if ( !file.exists() ) {
+            deleteFiles([ filename ])
+        }
+    }
+    sql.close()
+}
+
+def deleteStaleFiles() {
+    def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
+    def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
+    def row = sql.firstRow( sqlCommand )
+    sql.cose()
+
+    def filename = row.filename
+    def oldestFileDate = new File( filename ).lastModified()
     new File( diskVolume ).eachFileRecurse {
         def file = it
 
@@ -105,7 +119,7 @@ def deepClean() {
         if ( lastModified < oldestFileDate ) {
             if ( file.exists() ) {
                 if ( !file.directory || ( file.directory && file.list().size() == 0 ) ) {
-                    println "Deep cleaning ${ file }..."
+                    println "Deleting stale file ${ file }..."
                     file.delete()
                 }
                 else {
@@ -113,10 +127,8 @@ def deepClean() {
                 }
             }
             else {
-                println "Deep clean marked ${ file.absolutePath } for deletion but it doesn't appear to exist... FYI."
+                println "${ file.absolutePath } was marked for deletion but it doesn't appear to exist... FYI."
             }
         }
     }
-
-    println "Deep clean complete..."
 }
