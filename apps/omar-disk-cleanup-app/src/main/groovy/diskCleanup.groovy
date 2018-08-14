@@ -106,29 +106,39 @@ def deleteStaleEntries() {
 
 def deleteStaleFiles() {
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
-    def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
-    def row = sql.firstRow( sqlCommand )
-    sql.cose()
+    def row = sql.firstRow( "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;" )
+    def oldestFileDate = new File( row.filename ).lastModified()
 
-    def filename = row.filename
-    def oldestFileDate = new File( filename ).lastModified()
+    def rasterEntryFiles = []
+    sql.eachRow( "SELECT name FROM raster_entry_file;" ) {
+        rasterEntryFiles.push( it.name )
+    }
+
+    sql.close()
+
+
     new File( diskVolume ).eachFileRecurse {
         def file = it
 
-        def lastModified = file.lastModified()
-        if ( lastModified < oldestFileDate ) {
-            if ( file.exists() ) {
-                if ( !file.directory || ( file.directory && file.list().size() == 0 ) ) {
-                    println "Deleting stale file ${ file }..."
-                    file.delete()
-                }
-                else {
-                    println "I would delete ${ file.absolutePath } but it has stuff in it."
-                }
+        if ( file.exists() && !file.directory ) {
+            def lastModified = file.lastModified()
+            if ( lastModified < oldestFileDate ) {
+                println "Deleting stale file ${ file }..."
+                file.delete()
             }
-            else {
-                println "${ file.absolutePath } was marked for deletion but it doesn't appear to exist... FYI."
+            else if ( rasterEntryFiles.indexOf( file ) < 0 )  {
+                println "Deleting unused file ${ file }..."
+                file.delete()
             }
+        }
+    }
+
+    new File( diskVolume ).eachDirRecurse {
+        def directory = it
+
+        if (  file.list().size() == 0 ) {
+            println "Deleting empty directory ${ directory }..."
+            directory.delete()
         }
     }
 }
