@@ -106,8 +106,17 @@ def deleteStaleEntries() {
 
 def deleteStaleFiles() {
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
-    def row = sql.firstRow( "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;" )
-    def oldestFileDate = new File( row.filename ).lastModified()
+
+    def filenames = []
+    sql.eachRow( "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;" ) {
+        filenames.push( it.filename )
+    }
+    def newestFileDate = new File( filenames.last() ).lastModified()
+
+    // set the stale date to be a day behind, just for good measure
+    def newestStaleFileDate = new Date( newestFileDate ) - 1
+    def staleFileDate = newestStaleFileDate.getTime()
+
 
     def rasterEntryFiles = []
     sql.eachRow( "SELECT name FROM raster_entry_file;" ) {
@@ -122,13 +131,13 @@ def deleteStaleFiles() {
 
         if ( file.exists() && !file.directory ) {
             def lastModified = file.lastModified()
-            if ( lastModified < oldestFileDate ) {
-                println "Deleting stale file ${ file }..."
-                file.delete()
-            }
-            else if ( rasterEntryFiles.indexOf( file ) < 0 )  {
-                println "Deleting unused file ${ file }..."
-                file.delete()
+            if ( lastModified < staleFileDate ) {
+                if ( rasterEntryFiles.indexOf( file ) < 0 )  {
+                    if ( filenames.indexOf( file ) < 0 ) {
+                        println "Deleting stale file ${ file }..."
+                        file.delete()
+                    }
+                }
             }
         }
     }
