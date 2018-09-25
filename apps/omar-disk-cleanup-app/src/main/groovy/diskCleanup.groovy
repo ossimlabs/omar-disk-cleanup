@@ -15,12 +15,12 @@ username = System.getenv( "POSTGRES_USER" ).toString()
 
 def deleteStaleFiles = System.getenv( "DELETE_STALE_FILES" )
 if ( deleteStaleFiles && Boolean.parseBoolean( deleteStaleFiles ) ) {
-    deleteStaleFiles()
+    removeStaleFiles()
 }
 
 def deleteStaleEntries = System.getenv( "DELETE_STALE_ENTRIES" )
 if ( deleteStaleEntries && Boolean.parseBoolean( deleteStaleEntries ) ) {
-    deleteStaleEntries()
+    removeStaleEntries()
 }
 
 
@@ -90,7 +90,7 @@ def deleteFiles( filenames ) {
     }
 }
 
-def deleteStaleEntries() {
+def removeStaleEntries() {
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
     def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
     sql.eachRow( sqlCommand ) {
@@ -104,7 +104,7 @@ def deleteStaleEntries() {
     sql.close()
 }
 
-def deleteStaleFiles() {
+def removeStaleFiles() {
     def sql = Sql.newInstance( jdbcUrl, username, password, "org.postgresql.Driver" )
 
     def filenames = []
