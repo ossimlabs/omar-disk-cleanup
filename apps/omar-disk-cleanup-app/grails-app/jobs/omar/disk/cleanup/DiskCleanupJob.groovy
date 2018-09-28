@@ -12,9 +12,9 @@ class DiskCleanupJob {
     }
 
     def execute() {
-        diskVolume = grailsApplication.config.diskVolume
-        maxDiskLimit = grailsApplication.config.maxDiskLimit
-        minDiskLimit = grailsApplication.config.minDiskLimit
+        def diskVolume = grailsApplication.config.diskVolume
+        def maxDiskLimit = grailsApplication.config.maxDiskLimit
+        def minDiskLimit = grailsApplication.config.minDiskLimit
 
 
         def deleteStaleFiles = grailsApplication.config.deleteStaleFiles
@@ -109,9 +109,9 @@ class DiskCleanupJob {
         def newestStaleFileDate = new Date( newestFileDate ) - 1
         def staleFileDate = newestStaleFileDate.getTime()
 
-
         def rasterEntryFiles = RasterEntryFile.list().collect({ it.name })
 
+        def diskVolume = grailsApplication.config.diskVolume
         new File( diskVolume ).eachFileRecurse {
             def file = it
 
