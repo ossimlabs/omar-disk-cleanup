@@ -18,7 +18,7 @@ class DiskCleanupJob {
 
 
         def deleteStaleFiles = grailsApplication.config.deleteStaleFiles
-        if ( deleteStaleFiles && Boolean.parseBoolean( deleteStaleFiles ) ) {
+        if ( deleteStaleFiles ) {
             removeStaleFiles()
         }
 
