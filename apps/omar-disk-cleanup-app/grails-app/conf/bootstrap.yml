@@ -1,6 +1,6 @@
 spring:
   application:
-    name: isa-ui
+    name: omar-disk-cleanup
   cloud:
     config:
       enabled: false
