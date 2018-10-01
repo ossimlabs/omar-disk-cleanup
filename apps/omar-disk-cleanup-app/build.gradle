@@ -57,7 +57,8 @@ dependencyManagement {
 
 grails {
     plugins {
-        runtime project(':omar-raster-plugin')
+        compile project(':omar-raster-plugin')
+        compile project(':omar-stager-plugin')
     }
 }
 
