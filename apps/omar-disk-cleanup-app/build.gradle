@@ -98,10 +98,7 @@ dependencies {
 
 
     compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
-    //compile "org.grails.plugins:postgresql-extensions:5.1.0"
     compile "org.grails.plugins:quartz:2.0.12"
-    //compile "org.hibernate:hibernate-ehcache:5.1.1.Final"
-    //compile "org.postgresql:postgresql:9.4.1211.jre7"
     compile "org.springframework.cloud:spring-cloud-starter-config"
     compile "org.springframework.cloud:spring-cloud-starter-eureka"
 }

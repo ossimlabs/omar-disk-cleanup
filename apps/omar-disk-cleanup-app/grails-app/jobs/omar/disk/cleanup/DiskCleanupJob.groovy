@@ -2,7 +2,7 @@ package omar.disk.cleanup
 
 class DiskCleanupJob {
 
-    //def diskCleanupService
+    def diskCleanupService
 
     static triggers = {
         simple repeatInterval: 600000 // execute job every 10 minutes
@@ -10,6 +10,6 @@ class DiskCleanupJob {
 
 
     def execute() {
-        //diskCleanupService.cleanup()
+        diskCleanupService.cleanup()
     }
 }
