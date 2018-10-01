@@ -58,6 +58,7 @@ dependencyManagement {
 grails {
     plugins {
         compile project(':omar-raster-plugin')
+        compile project(':omar-hibernate-spatial-plugin')
     }
 }
 
