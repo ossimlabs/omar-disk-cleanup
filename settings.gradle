@@ -8,11 +8,11 @@ pluginManagement {
 def final O2_DEV_HOME = System.getenv('O2_DEV_HOME')
 
 if ( O2_DEV_HOME ) {
+    include 'omar-disk-cleanup-app',
+        'omar-core-plugin',
+        'omar-raster-plugin'
 
-   include 'omar-disk-cleanup-app',
-	   'omar-core-plugin'
-
-   project(':omar-disk-cleanup-app').projectDir = "${O2_DEV_HOME}/omar-disk-cleanup/apps/omar-disk-cleanup-app" as File
-   project(':omar-core-plugin').projectDir = "${O2_DEV_HOME}/omar-core/plugins/omar-core-plugin" as File
-
+    project(':omar-disk-cleanup-app').projectDir = "${O2_DEV_HOME}/omar-disk-cleanup/apps/omar-disk-cleanup-app" as File
+    project(':omar-core-plugin').projectDir = "${O2_DEV_HOME}/omar-core/plugins/omar-core-plugin" as File
+    project(':omar-raster-plugin').projectDir = "${O2_DEV_HOME}/omar-raster/plugins/omar-raster-plugin" as File
 }
