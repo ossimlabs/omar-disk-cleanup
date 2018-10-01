@@ -59,7 +59,7 @@ grails {
     plugins {
         //compile project(':omar-hibernate-spatial-plugin')
         //compile project(':omar-oms-plugin')
-        //runtime project(':omar-raster-plugin')
+        compile project(':omar-raster-plugin')
         //compile project(':omar-stager-plugin')
     }
 }
