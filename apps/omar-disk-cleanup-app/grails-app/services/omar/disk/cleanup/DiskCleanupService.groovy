@@ -102,7 +102,7 @@ class DiskCleanupService {
     }
 
     def removeStaleFiles() { println "cheese"
-        RasterEntry.each {
+        RasterEntry.list().each {
             println it
         }
         //def filenames = RasterEntry.list( sort: "ingest_date", order: "asc" ).collect({ it.filename })
