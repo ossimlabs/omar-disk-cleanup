@@ -1,7 +1,7 @@
 buildscript {
     ext {
         grailsVersion = project.grailsVersion
-        baseImage = "omar-base"
+        baseImage = "omar-ossim-base"
     }
     if( System.env.OMAR_COMMON_PROPERTIES ) {
         apply from: System.env.OMAR_COMMON_PROPERTIES
@@ -57,10 +57,7 @@ dependencyManagement {
 
 grails {
     plugins {
-        //compile project(':omar-hibernate-spatial-plugin')
-        //compile project(':omar-oms-plugin')
         compile project(':omar-raster-plugin')
-        //compile project(':omar-stager-plugin')
     }
 }
 
