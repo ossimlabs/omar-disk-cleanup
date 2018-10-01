@@ -102,7 +102,7 @@ class DiskCleanupService {
     }
 
     def removeStaleFiles() {
-        def filenames = RasterEntry.list( sort: "ingest_date", order: "asc" ).collect({ it.filename })
+        def filenames = RasterEntry.list( sort: "ingestDate", order: "asc" ).collect({ it.filename })
         def newestFileDate = new File( filenames.last() ).lastModified()
 
         // set the stale date to be a day behind, just for good measure
