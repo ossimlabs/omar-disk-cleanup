@@ -101,9 +101,9 @@ class DiskCleanupService {
         }
     }
 
-    def removeStaleFiles() { println "cheese"
+    def removeStaleFiles() {
         RasterEntry.list().each {
-            println it
+            println it.ingestDate
         }
         //def filenames = RasterEntry.list( sort: "ingest_date", order: "asc" ).collect({ it.filename })
         /*def newestFileDate = new File( filenames.last() ).lastModified()
