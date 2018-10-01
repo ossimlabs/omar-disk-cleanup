@@ -58,7 +58,6 @@ dependencyManagement {
 grails {
     plugins {
         compile project(':omar-raster-plugin')
-        compile project(':omar-stager-plugin')
     }
 }
 
