@@ -4,6 +4,7 @@ package omar.disk.cleanup
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.Method.POST
 import omar.raster.RasterEntry
+import omar.raster.RasterEntryFile
 
 
 class DiskCleanupService {
