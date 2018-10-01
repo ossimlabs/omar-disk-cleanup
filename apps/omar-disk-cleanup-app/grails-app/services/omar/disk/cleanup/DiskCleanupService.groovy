@@ -101,7 +101,7 @@ class DiskCleanupService {
         }
     }
 
-    def removeStaleFiles() {
+    def removeStaleFiles() { println "cheese"
         RasterEntry.list().each {
             println it.properties
         }
