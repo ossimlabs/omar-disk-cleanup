@@ -102,11 +102,8 @@ class DiskCleanupService {
     }
 
     def removeStaleFiles() {
-        RasterEntry.list().each {
-            println it.ingestDate
-        }
-        //def filenames = RasterEntry.list( sort: "ingest_date", order: "asc" ).collect({ it.filename })
-        /*def newestFileDate = new File( filenames.last() ).lastModified()
+        def filenames = RasterEntry.list( sort: "ingest_date", order: "asc" ).collect({ it.filename })
+        def newestFileDate = new File( filenames.last() ).lastModified()
 
         // set the stale date to be a day behind, just for good measure
         def newestStaleFileDate = new Date( newestFileDate ) - 1
@@ -124,7 +121,7 @@ class DiskCleanupService {
                     if ( rasterEntryFiles.indexOf( file ) < 0 )  {
                         if ( filenames.indexOf( file ) < 0 ) {
                             println "Deleting stale file ${ file }..."
-                            file.delete()
+                            //file.delete()
                         }
                     }
                 }
@@ -137,8 +134,8 @@ class DiskCleanupService {
 
             if (  file.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
-                directory.delete()
+                //directory.delete()
             }
-        }*/
+        }
     }
 }
