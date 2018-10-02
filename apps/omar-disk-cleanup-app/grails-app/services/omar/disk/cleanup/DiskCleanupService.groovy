@@ -20,12 +20,16 @@ class DiskCleanupService {
 
         def deleteStaleFiles = grailsApplication.config.deleteStaleFiles
         if ( deleteStaleFiles ) {
+            println "Deleting Stale Files..."
             removeStaleFiles()
+            println "Done Deleting Stale Files..."
         }
 
         def deleteStaleEntries = grailsApplication.config.deleteStaleEntries
-        if ( deleteStaleEntries && Boolean.parseBoolean( deleteStaleEntries ) ) {
+        if ( deleteStaleEntries ) {
+            println "Deleting Stale Entries..."
             removeStaleEntries()
+            println "Done Deleting Stale Entries..."
         }
 
 
@@ -83,11 +87,11 @@ class DiskCleanupService {
         filenames.eachWithIndex {
             value, index ->
             println "Deleting raster entry ${ index } of ${ filenames.size() }: ${ value }..."
-            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
-            http.request( POST ) { req ->
-                response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                response.success = { resp, reader -> println "Success: ${ reader }" }
-            }
+            //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+            //http.request( POST ) { req ->
+            //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
+            //    response.success = { resp, reader -> println "Success: ${ reader }" }
+            //}
         }
     }
 
