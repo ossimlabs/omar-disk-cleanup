@@ -96,7 +96,7 @@ class DiskCleanupService {
     }
 
     def removeStaleEntries() {
-        RasterEntry.each {
+        RasterEntry.list().each {
             def filename = it.filename
 
             def file = new File( filename )
