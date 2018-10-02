@@ -133,7 +133,7 @@ class DiskCleanupService {
         new File( diskVolume ).eachDirRecurse {
             def directory = it
 
-            if (  file.list().size() == 0 ) {
+            if ( directory.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
                 //directory.delete()
             }
