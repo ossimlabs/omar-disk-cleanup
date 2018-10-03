@@ -7,9 +7,14 @@ deleteStaleFiles: true
 # The desired disk volume cache location
 diskVolume: /data/s3
 
+# The maximum disk space percentage that can be reached before deletion begins
 maxDiskLimit: 0.95
 
+# The disk space percentage to reach before deletetion stops
 minDiskLimit: 0.94
+
+# How often ( in  milliseconds ) to run
+repeatInterval: 600000
 
 # Location of the stager URL
 stagerUrl: http://omar-stager-app:8080/omar-stager

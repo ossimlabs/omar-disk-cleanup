@@ -50,7 +50,7 @@ class DiskCleanupService {
             def numberOfBytesCounted = 0
             def filesToDelete = []
 
-            RasterEntry.each {
+            RasterEntry.list( sort: "ingestDate", order: "asc" ).each {
                 def filename = it.filename
 
                 filesToDelete.push( filename )
@@ -86,12 +86,12 @@ class DiskCleanupService {
 
         filenames.eachWithIndex {
             value, index ->
-            println "Deleting raster entry ${ index } of ${ filenames.size() }: ${ value }..."
-            //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
-            //http.request( POST ) { req ->
-            //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
-            //    response.success = { resp, reader -> println "Success: ${ reader }" }
-            //}
+            println "Deleting raster entry ${ index + 1 } of ${ filenames.size() }: ${ value }..."
+            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+            http.request( POST ) { req ->
+                response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                response.success = { resp, reader -> println "Success: ${ reader }" }
+            }
         }
     }
 
@@ -126,7 +126,7 @@ class DiskCleanupService {
                     if ( rasterEntryFiles.indexOf( file ) < 0 )  {
                         if ( filenames.indexOf( file ) < 0 ) {
                             println "Deleting stale file ${ file }..."
-                            //file.delete()
+                            file.delete()
                         }
                     }
                 }
@@ -139,7 +139,7 @@ class DiskCleanupService {
 
             if ( directory.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
-                //directory.delete()
+                directory.delete()
             }
         }
     }
