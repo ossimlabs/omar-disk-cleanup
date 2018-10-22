@@ -90,11 +90,11 @@ class DiskCleanupService {
             value, index ->
             println "Deleting raster entry ${ index + 1 } of ${ filenames.size() }: ${ value }..."
             if ( !grailsApplication.config.dryRun ) {
-                def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
-                http.request( POST ) { req ->
-                    response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                    response.success = { resp, reader -> println "Success: ${ reader }" }
-                }
+                //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+                //http.request( POST ) { req ->
+                //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                //    response.success = { resp, reader -> println "Success: ${ reader }" }
+                //}
             }
         }
     }
@@ -131,7 +131,7 @@ class DiskCleanupService {
                         if ( filenames.indexOf( file ) < 0 ) {
                             println "Deleting stale file ${ file }..."
                             if ( !grailsApplication.config.dryRun ) {
-                                file.delete()
+                                //file.delete()
                             }
                         }
                     }
@@ -146,7 +146,7 @@ class DiskCleanupService {
             if ( directory.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
                 if ( !grailsApplication.config.dryRun ) {
-                    directory.delete()
+                    //directory.delete()
                 }
             }
         }
