@@ -5,7 +5,19 @@ deleteStaleEntries: true
 deleteStaleFiles: true
 
 # The desired disk volume cache location
-diskVolume: /data/s3
+#diskVolumes:
+#    data:
+#        mount: /data/s3
+#        databases:
+#            database1:
+#                driverClassName: ${omarDb.driver}
+#                url: ${omarDb.url}
+#                username: ${omarDb.username}
+#                password: ${omarDb.password}
+
+
+# Whether or not you actually want to delete files and database entires
+dryRun: false
 
 # The maximum disk space percentage that can be reached before deletion begins
 maxDiskLimit: 0.95

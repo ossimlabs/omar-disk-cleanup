@@ -13,6 +13,8 @@ class DiskCleanupService {
 
 
     def cleanup() {
+        dryRun = grailsApplication.config.dryRun
+
         def diskVolume = grailsApplication.config.diskVolume
         def maxDiskLimit = grailsApplication.config.maxDiskLimit
         def minDiskLimit = grailsApplication.config.minDiskLimit
@@ -87,10 +89,12 @@ class DiskCleanupService {
         filenames.eachWithIndex {
             value, index ->
             println "Deleting raster entry ${ index + 1 } of ${ filenames.size() }: ${ value }..."
-            def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
-            http.request( POST ) { req ->
-                response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                response.success = { resp, reader -> println "Success: ${ reader }" }
+            if ( !dryRun ) {
+                def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+                http.request( POST ) { req ->
+                    response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                    response.success = { resp, reader -> println "Success: ${ reader }" }
+                }
             }
         }
     }
@@ -126,7 +130,9 @@ class DiskCleanupService {
                     if ( rasterEntryFiles.indexOf( file ) < 0 )  {
                         if ( filenames.indexOf( file ) < 0 ) {
                             println "Deleting stale file ${ file }..."
-                            file.delete()
+                            if ( !dryRun ) {
+                                file.delete()
+                            }
                         }
                     }
                 }
@@ -139,7 +145,9 @@ class DiskCleanupService {
 
             if ( directory.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
-                directory.delete()
+                if ( !dryRun ) {
+                    directory.delete()
+                }
             }
         }
     }
