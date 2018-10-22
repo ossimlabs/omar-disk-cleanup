@@ -104,8 +104,8 @@ dependencies {
     compile "org.springframework.cloud:spring-cloud-starter-eureka"
 
 
-    compile "org.grails.plugins:postgresql-extensions:5.1.0"
-    compile "org.postgresql:postgresql:9.4.1211.jre7"
+    //compile "org.grails.plugins:postgresql-extensions:5.1.0"
+    //compile "org.postgresql:postgresql:9.4.1211.jre7"
 }
 
 task wrapper(type: Wrapper) {
