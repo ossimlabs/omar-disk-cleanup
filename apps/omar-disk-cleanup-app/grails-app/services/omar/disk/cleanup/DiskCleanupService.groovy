@@ -13,7 +13,7 @@ class DiskCleanupService {
 
 
     def cleanup() {
-        dryRun = grailsApplication.config.dryRun
+        def dryRun = grailsApplication.config.dryRun
 
         def diskVolume = grailsApplication.config.diskVolume
         def maxDiskLimit = grailsApplication.config.maxDiskLimit
@@ -89,7 +89,7 @@ class DiskCleanupService {
         filenames.eachWithIndex {
             value, index ->
             println "Deleting raster entry ${ index + 1 } of ${ filenames.size() }: ${ value }..."
-            if ( !dryRun ) {
+            if ( !grailsApplication.config.dryRun ) {
                 def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
                 http.request( POST ) { req ->
                     response.failure = { resp, reader -> println "Failure: ${ reader }" }
@@ -130,7 +130,7 @@ class DiskCleanupService {
                     if ( rasterEntryFiles.indexOf( file ) < 0 )  {
                         if ( filenames.indexOf( file ) < 0 ) {
                             println "Deleting stale file ${ file }..."
-                            if ( !dryRun ) {
+                            if ( !grailsApplication.config.dryRun ) {
                                 file.delete()
                             }
                         }
@@ -145,7 +145,7 @@ class DiskCleanupService {
 
             if ( directory.list().size() == 0 ) {
                 println "Deleting empty directory ${ directory }..."
-                if ( !dryRun ) {
+                if ( !grailsApplication.config.dryRun ) {
                     directory.delete()
                 }
             }
