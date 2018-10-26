@@ -1,14 +1,14 @@
 package omar.disk.cleanup
 
 
+import groovy.sql.Sql
 import groovyx.net.http.HTTPBuilder
 import static groovyx.net.http.Method.POST
-import omar.raster.RasterEntry
-import omar.raster.RasterEntryFile
 
 
 class DiskCleanupService {
 
+    def dataSource
     def grailsApplication
 
 
@@ -52,7 +52,9 @@ class DiskCleanupService {
             def numberOfBytesCounted = 0
             def filesToDelete = []
 
-            RasterEntry.list( sort: "ingestDate", order: "asc" ).each {
+            def sql = Sql.newInstance( dataSource )
+            def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
+            sql.eachRow( sqlCommand ) {
                 def filename = it.filename
 
                 filesToDelete.push( filename )
@@ -65,10 +67,12 @@ class DiskCleanupService {
                 if ( numberOfBytesToDelete < numberOfBytesCounted ) {
                     deleteFiles( filesToDelete )
 
+                    sql.close()
                     System.exit( 0 )
                 }
             }
 
+            sql.close()
             println "I would have to delete everything and it still wouldn't be enough!"
         }
     }
@@ -90,17 +94,19 @@ class DiskCleanupService {
             value, index ->
             println "Deleting raster entry ${ index + 1 } of ${ filenames.size() }: ${ value }..."
             if ( !grailsApplication.config.dryRun ) {
-                //def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
-                //http.request( POST ) { req ->
-                //    response.failure = { resp, reader -> println "Failure: ${ reader }" }
-                //    response.success = { resp, reader -> println "Success: ${ reader }" }
-                //}
+                def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ value }" )
+                http.request( POST ) { req ->
+                    response.failure = { resp, reader -> println "Failure: ${ reader }" }
+                    response.success = { resp, reader -> println "Success: ${ reader }" }
+                }
             }
         }
     }
 
     def removeStaleEntries() {
-        RasterEntry.list().each {
+        def sql = Sql.newInstance( dataSource )
+        def sqlCommand = "SELECT filename FROM raster_entry;"
+        sql.eachRow( sqlCommand ) {
             def filename = it.filename
 
             def file = new File( filename )
@@ -108,46 +114,64 @@ class DiskCleanupService {
                 deleteFiles([ filename ])
             }
         }
+        sql.close()
     }
 
     def removeStaleFiles() {
-        def filenames = RasterEntry.list( sort: "ingestDate", order: "asc" ).collect({ it.filename })
+        def sql = Sql.newInstance( dataSource )
+        def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
+        def filenames = []
+        sqdl.eachRow( sqlCommand ) {
+            filenames.push( it.filename );
+        }
         def newestFileDate = new File( filenames.last() ).lastModified()
 
         // set the stale date to be a day behind, just for good measure
         def newestStaleFileDate = new Date( newestFileDate ) - 1
         def staleFileDate = newestStaleFileDate.getTime()
 
-        def rasterEntryFiles = RasterEntryFile.list().collect({ it.name })
+        def rasterEntryFiles = []
+        sql.eachRow( "SELECT name FROM raster_entry_files;" ) {
+            rasterEntryFiles.push( it.name )
+        }
+        sql.close()
 
         def diskVolume = grailsApplication.config.diskVolume
+        def files = []
         new File( diskVolume ).eachFileRecurse {
             def file = it
 
-            if ( file.exists() && !file.directory ) {
+            if ( !file.directory ) {
                 def lastModified = file.lastModified()
                 if ( lastModified < staleFileDate ) {
                     if ( rasterEntryFiles.indexOf( file ) < 0 )  {
                         if ( filenames.indexOf( file ) < 0 ) {
-                            println "Deleting stale file ${ file }..."
-                            if ( !grailsApplication.config.dryRun ) {
-                                //file.delete()
-                            }
+                            files.push( it )
                         }
                     }
                 }
             }
         }
+        files.each {
+            println "Deleting stale file ${ it }..."
+            if ( !grailsApplication.config.dryRun ) {
+                it.delete()
+            }
+        }
 
         // clean up empty directories
+        def directories = []
         new File( diskVolume ).eachDirRecurse {
             def directory = it
 
             if ( directory.list().size() == 0 ) {
-                println "Deleting empty directory ${ directory }..."
-                if ( !grailsApplication.config.dryRun ) {
-                    //directory.delete()
-                }
+                directories.push( directory )
+            }
+        }
+        directories.each {
+            println "Deleting empty directory ${ it }..."
+            if ( !grailsApplication.config.dryRun ) {
+                it.delete()
             }
         }
     }

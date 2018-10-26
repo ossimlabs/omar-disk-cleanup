@@ -1,23 +1,11 @@
 # A boolean to remove raster entries whose file is not on the volume
-deleteStaleEntries: true
+deleteStaleEntries: false
 
 # A boolean to delete files on the volume older than the oldest ingested raster entry
-deleteStaleFiles: true
-
-# The desired disk volume cache location
-#diskVolumes:
-#    data:
-#        mount: /data/s3
-#        databases:
-#            database1:
-#                driverClassName: ${omarDb.driver}
-#                url: ${omarDb.url}
-#                username: ${omarDb.username}
-#                password: ${omarDb.password}
-
+deleteStaleFiles: false
 
 # Whether or not you actually want to delete files and database entires
-dryRun: false
+dryRun: true
 
 # The maximum disk space percentage that can be reached before deletion begins
 maxDiskLimit: 0.95

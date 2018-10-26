@@ -55,13 +55,6 @@ dependencyManagement {
     applyMavenExclusions false
 }
 
-grails {
-    plugins {
-        compile project(':omar-raster-plugin')
-        compile project(':omar-hibernate-spatial-plugin')
-    }
-}
-
 dependencies {
     compile "de.codecentric:spring-boot-admin-starter-client:${springBootAdminStarterClientV}"
 
@@ -103,8 +96,6 @@ dependencies {
     compile "org.springframework.cloud:spring-cloud-starter-config"
     compile "org.springframework.cloud:spring-cloud-starter-eureka"
 
-
-    compile "org.grails.plugins:postgresql-extensions:5.1.0"
     compile "org.postgresql:postgresql:9.4.1211.jre7"
 }
 
