@@ -121,7 +121,7 @@ class DiskCleanupService {
         def sql = Sql.newInstance( dataSource )
         def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
         def filenames = []
-        sqdl.eachRow( sqlCommand ) {
+        sql.eachRow( sqlCommand ) {
             filenames.push( it.filename );
         }
         def newestFileDate = new File( filenames.last() ).lastModified()
