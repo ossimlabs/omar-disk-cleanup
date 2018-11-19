@@ -131,7 +131,7 @@ class DiskCleanupService {
         def staleFileDate = newestStaleFileDate.getTime()
 
         def rasterEntryFiles = []
-        sql.eachRow( "SELECT name FROM raster_entry_files;" ) {
+        sql.eachRow( "SELECT name FROM raster_entry_file;" ) {
             rasterEntryFiles.push( it.name )
         }
         sql.close()

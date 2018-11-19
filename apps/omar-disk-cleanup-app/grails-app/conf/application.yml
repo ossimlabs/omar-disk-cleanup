@@ -4,6 +4,9 @@ deleteStaleEntries: false
 # A boolean to delete files on the volume older than the oldest ingested raster entry
 deleteStaleFiles: false
 
+# The disk volume to be monitored
+diskVolume: /data/s3
+
 # Whether or not you actually want to delete files and database entires
 dryRun: true
 
