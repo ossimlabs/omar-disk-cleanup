@@ -1,3 +1,28 @@
+omar:
+  disk:
+    cleanup:
+        deleteStaleEntries: true
+        deleteStaleFiles: true
+        dryRun: true
+        volumes:
+          -
+            repository: /data/s3
+            minDiskLimitPercent: 0.94
+            maxDiskLimitPercent: 0.96
+            enableScan: true
+            stagerUrl: https://localhost:8080/omar-stager
+            dbInfo:
+              dataSource:
+                url: jdbc:postgresql://localhost:5432/omar_db
+                driverClassName: org.postgresql.Driver
+                user: postgres
+                password: postgres
+              tableName: raster_entry
+              filenameColumn: filename
+              lruDateColumn: ingest_date
+              
+
+
 # A boolean to remove raster entries whose file is not on the volume
 deleteStaleEntries: false
 

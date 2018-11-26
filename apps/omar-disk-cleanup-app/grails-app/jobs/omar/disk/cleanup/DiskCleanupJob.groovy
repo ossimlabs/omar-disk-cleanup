@@ -3,9 +3,10 @@ package omar.disk.cleanup
 class DiskCleanupJob {
 
     def diskCleanupService
+    DiskCleanupConfig diskCleanupConfig
 
     static triggers = {
-        simple repeatInterval: grailsApplication.config.repeatInterval ?: 600000 
+        simple repeatInterval: 2000//grailsApplication.config.repeatInterval ?: 600000 
     }
 
 
