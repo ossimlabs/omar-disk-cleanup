@@ -177,7 +177,14 @@ class DiskCleanupService {
             log.info "Performing Dry Run......${new Date()}"
         }
         diskCleanupConfig.volumes?.each{volume ->
-            cleanupVolume(volume)
+            if(volume.localRepository?.exists())
+            {
+                cleanupVolume(volume)
+            }
+            else
+            {
+                log.info "Repository '${volume.localRepository}' does not exist and will be skipped"
+            }
         }
     }
 
