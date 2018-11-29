@@ -33,7 +33,13 @@ class DiskCleanupJob {
         // this does a test and set
         if(!atomicIsRunning())
         {
-            diskCleanupService.cleanup()
+            try{
+                diskCleanupService.cleanup()
+            }
+            catch(e)
+            {
+                log.info e.toString()
+            }
 
             setRunning(false)
         }
