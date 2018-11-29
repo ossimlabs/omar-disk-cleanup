@@ -14,15 +14,13 @@ class DiskCleanupJob {
     @Synchronized("myLock")
     Boolean atomicIsRunning()
     {
-        Boolean result = false;
+        Boolean result = running;
+    
         if(!running)
         {
             running = true
         }
-        else
-        {
-            result = true
-        }
+    
         result
     }
     @Synchronized("myLock")
