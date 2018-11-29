@@ -13,17 +13,18 @@ import groovy.transform.ToString
 @ToString(includeNames=true)
 class DiskCleanupConfig
 {
-   Boolean deleteStaleEntries
-   Boolean deleteStaleFiles
-   Boolean dryRun
+   Boolean deleteStaleEntries = false
+   Boolean deleteStaleFiles = false
+   Boolean dryRun         = false
+   Long    repeatInterval = 60000
    List<Volume> volumes;
 
   @ToString(includeNames=true)
   static class Volume {
-     String  repository
-     Double  minDiskLimitPercent
-     Double  maxDiskLimitPercent
-     Boolean enableScan
+     String  localRepository
+     String  indexedRepository
+     Double  minDiskLimit
+     Double  maxDiskLimit
      DbInfo  dbInfo
      String  stagerUrl
   }
@@ -32,7 +33,7 @@ class DiskCleanupConfig
     HashMap<String,String> dataSource
     String                 tableName
     String                 filenameColumn
-    String                 lruDateColumn
+    String                 sortColumn
   }
 
   @ConfigurationPropertiesBinding

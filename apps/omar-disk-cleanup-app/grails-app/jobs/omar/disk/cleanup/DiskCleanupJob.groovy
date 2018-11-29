@@ -1,16 +1,43 @@
 package omar.disk.cleanup
+import groovy.transform.Synchronized
 
 class DiskCleanupJob {
-
+    static Boolean running = false;
+    private final myLock = new Object()
     def diskCleanupService
     DiskCleanupConfig diskCleanupConfig
 
     static triggers = {
-        simple repeatInterval: 2000//grailsApplication.config.repeatInterval ?: 600000 
+        simple repeatInterval: 60000, name: 'DiskCleanupTrigger', group: 'DiskCleanupGroup' 
+    }
+    
+    @Synchronized("myLock")
+    Boolean atomicIsRunning()
+    {
+        Boolean result = false;
+        if(!running)
+        {
+            running = true
+        }
+        else
+        {
+            result = true
+        }
+        result
+    }
+    @Synchronized("myLock")
+    void setRunning(Boolean value)
+    {
+        running = value
     }
 
-
     def execute() {
-        diskCleanupService.cleanup()
+        // this does a test and set
+        if(!atomicIsRunning())
+        {
+            diskCleanupService.cleanup()
+
+            setRunning(false)
+        }
     }
 }

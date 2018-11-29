@@ -12,7 +12,11 @@ class DiskCleanupService {
     def dataSource
     def grailsApplication
     DiskCleanupConfig diskCleanupConfig
-
+    
+    private logJson(HashMap map)
+    {
+        log.info new groovy.json.JsonBuilder(map).toString()
+    }
     public static long fileSize(File file) {
         long length = 0;
         if(file.isFile())
@@ -31,12 +35,12 @@ class DiskCleanupService {
     {
         Long result = 0
         files.each{
-            File file = new File(it);
+            File file = it as File;
             result += file.length()
         }
         result
     }
-    private Sql newInstance(HashMap dataSource)
+    private Sql newSqlInstance(HashMap dataSource)
     {
         Sql result
         try{
@@ -50,47 +54,81 @@ class DiskCleanupService {
 
         result
     }
-    def private cleanupVolume(DiskCleanupConfig.Volume volume)
+    private def getFilesToDelete(File mainFile)
     {
-        String path = volume.repository
-        Double maxDiskLimit = volume.maxDiskLimitPercent
-        Double minDiskLimit = volume.minDiskLimitPercent
+        def filesToDelete = [mainFile]
+
+        String fileNameOnly   = mainFile.getName()
+        String fileWithoutExt = FilenameUtils.removeExtension(fileNameOnly)
+        def files = new FileNameByRegexFinder().getFileNames(mainFile.parent,"${fileWithoutExt}*",fileNameOnly)
+        files.each{filesToDelete <<  it }
+
+        filesToDelete
+    }
+    private String localToIndexed(def volume, String file)
+    {
+        file.replace(volume.localRepository, volume.indexedRepository)
+    }
+    private String indexedToLocal(def volume, String file)
+    {
+        file.replace(volume.indexedRepository, volume.localRepository)
+    }
+    private def cleanupVolume(DiskCleanupConfig.Volume volume)
+    {
+        HashMap message = [:]
+        String path         = volume.localRepository
+        Double maxDiskLimit = volume.maxDiskLimit
+        Double minDiskLimit = volume.minDiskLimit
 
         Long totalDiskSpace = new File( path ).getTotalSpace()
-        Long freeDiskSpace = new File( path ).getUsableSpace()
-        Long usedDiskSpace = totalDiskSpace - freeDiskSpace
-        log.info "Checking volume: ${volume.repository}"
+        Long freeDiskSpace  = new File( path ).getUsableSpace()
+        Long usedDiskSpace  = totalDiskSpace - freeDiskSpace
+        Boolean deleteStaleFiles = diskCleanupConfig.deleteStaleFiles
+        message.totalDiskSpace = totalDiskSpace
+        message.freeDiskSpace  = freeDiskSpace
+        message.usedDiskSpace  = usedDiskSpace
+        if ( deleteStaleFiles ) {
+            log.info "Deleting Stale Files..."
+            removeStaleFiles()
+            log.info "Done Deleting Stale Files..."
+        }
+
+        Boolean deleteStaleEntries = diskCleanupConfig.deleteStaleEntries
+        if ( deleteStaleEntries ) {
+            log.info "Deleting Stale Entries..."
+            removeStaleEntries()
+            log.info "Done Deleting Stale Entries..."
+        }
+        log.info "Checking volume: ${volume.localRepository}"
         log.info "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
         log.info "Free Disk Space: ${ convertBytesToHumanReadable( freeDiskSpace ) }"
         log.info "Used Disk Space: ${ convertBytesToHumanReadable( usedDiskSpace ) }"
         if ( usedDiskSpace > totalDiskSpace * maxDiskLimit ) {
             log.info "The maximum disk limit has been exceeded!"
-            def numberOfBytesToDelete = ( totalDiskSpace - freeDiskSpace ) - minDiskLimit * totalDiskSpace
+            Long numberOfBytesToDelete = ( totalDiskSpace - freeDiskSpace ) - minDiskLimit * totalDiskSpace
             log.info "I will try and delete approx. ${ convertBytesToHumanReadable( numberOfBytesToDelete ) } of data..."
+            message.numberOfBytesToDelete = numberOfBytesToDelete
+            Long numberOfBytesCounted = 0
 
-            def numberOfBytesCounted = 0
-
-            def sql = newInstance( volume.dbInfo.dataSource )
+            Sql sql = newSqlInstance( volume.dbInfo.dataSource )
 
             Boolean done = false
-            String sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName} ORDER BY ${volume.dbInfo.lruDateColumn} ASC;".toString()
+            String sqlCommand
+            
+            sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName} ORDER BY ${volume.dbInfo.sortColumn} ASC;".toString()
             while(!done)
             {
                 def filesToDelete = []
                 def row = sql?.firstRow( sqlCommand )
                 if(row){
-                    String filename = row."${volume.dbInfo.filenameColumn}"
+                    String indexedFilename = row."${volume.dbInfo.filenameColumn}"
+                    String filename = indexedToLocal(volume, indexedFilename)
                     File file = new File( filename )
-                    if ( file.exists() ) {
-
+                    if ( file.exists() ) 
+                    {
                         numberOfBytesCounted += file.size()
                     }
-                    String fileNameOnly   = file.getName()
-                    String fileWithoutExt = FilenameUtils.removeExtension(fileNameOnly)
-                    def files = new FileNameByRegexFinder().getFileNames(file.parent,"${fileWithoutExt}*",fileNameOnly)
-                    println "FILES = ${files}"
-                    filesToDelete << filename
-                    files.each{filesToDelete <<  it }
+                    filesToDelete = getFilesToDelete(file)
                     Long bytes = byteCount(filesToDelete)
                     if(bytes)
                     {
@@ -104,6 +142,8 @@ class DiskCleanupService {
                             // try during the next run of the job
                             //
                             done = true
+                            message.status = 400
+                            message.statusMessage = "We were unsuccessfull in deleting all necessary files"
                         }
                     }
                     else
@@ -113,90 +153,32 @@ class DiskCleanupService {
 
                      if ( numberOfBytesToDelete < numberOfBytesCounted ) {
                         done = true
+                        message.status = 200
+                        message.statusMessage = "Enough data was removed to free up disk space"
                      }
                 }
                 else
                 {
                     done = true
+                    message.status = 400
+                    message.statusMessage = "All data was removed and can't free up anymore disk space"
                     log.info "All data was removed!"
                 }
             }
 
             sql?.close()
         }
+        logJson(message)
     }
    @Synchronized
     def cleanup() {
         if(diskCleanupConfig.dryRun)
         {
-            log.info "Performing Dry Run......"
+            log.info "Performing Dry Run......${new Date()}"
         }
         diskCleanupConfig.volumes?.each{volume ->
             cleanupVolume(volume)
         }
-
-/*
-        def diskVolume = grailsApplication.config.diskVolume
-        def maxDiskLimit = grailsApplication.config.maxDiskLimit
-        def minDiskLimit = grailsApplication.config.minDiskLimit
-
-
-        def deleteStaleFiles = grailsApplication.config.deleteStaleFiles
-        if ( deleteStaleFiles ) {
-            println "Deleting Stale Files..."
-            removeStaleFiles()
-            println "Done Deleting Stale Files..."
-        }
-
-        def deleteStaleEntries = grailsApplication.config.deleteStaleEntries
-        if ( deleteStaleEntries ) {
-            println "Deleting Stale Entries..."
-            removeStaleEntries()
-            println "Done Deleting Stale Entries..."
-        }
-
-
-        def totalDiskSpace = new File( diskVolume ).getTotalSpace()
-        println "Total Disk Space: ${ convertBytesToHumanReadable( totalDiskSpace ) }"
-        def freeDiskSpace = new File( diskVolume ).getUsableSpace()
-        println "Free Disk Space: ${ convertBytesToHumanReadable( freeDiskSpace ) }"
-        def usedDiskSpace = totalDiskSpace - freeDiskSpace
-        println "Used Disk Space: ${ convertBytesToHumanReadable( usedDiskSpace ) }"
-
-        println "Current disk usage: ${ (usedDiskSpace / totalDiskSpace * 100 as Double).trunc( 2 ) } %"
-
-        if ( usedDiskSpace > totalDiskSpace * maxDiskLimit ) {
-            println "The maximum disk limit has been exceeded!"
-            def numberOfBytesToDelete = ( totalDiskSpace - freeDiskSpace ) - minDiskLimit * totalDiskSpace
-            println "I will try and delete approx. ${ convertBytesToHumanReadable( numberOfBytesToDelete ) } of data..."
-
-            def numberOfBytesCounted = 0
-            def filesToDelete = []
-
-            def sql = Sql.newInstance( dataSource )
-            def sqlCommand = "SELECT filename FROM raster_entry ORDER BY ingest_date ASC;"
-            sql.eachRow( sqlCommand ) {
-                def filename = it.filename
-
-                filesToDelete.push( filename )
-
-                def file = new File( filename )
-                if ( file.exists() ) {
-                    numberOfBytesCounted += file.size()
-                }
-
-                if ( numberOfBytesToDelete < numberOfBytesCounted ) {
-                    deleteFiles( filesToDelete )
-
-                    sql.close()
-                    System.exit( 0 )
-                }
-            }
-
-            sql.close()
-            println "I would have to delete everything and it still wouldn't be enough!"
-        }
-        */
     }
 
     def convertBytesToHumanReadable( bytes ) {
@@ -208,33 +190,45 @@ class DiskCleanupService {
 
         return "${ (bytes / Math.pow( unit, exp )).trunc( 2 ) } ${ size }B"
     }
-
-    Boolean deleteFiles( DiskCleanupConfig.Volume volume, filenames ) {
+    private deleteFilesFromDisk(def filenames)
+    {
+        filenames?.each{
+            File file = it as File
+            if(file.exists())
+            {
+               file.delete() 
+            }
+        }
+    }
+    Boolean deleteFiles( DiskCleanupConfig.Volume volume, def filenames ) {
         Boolean result = false
         if(filenames)
         {
+            String mainFile = filenames[0]
+            String indexedMainFile = localToIndexed(volume, mainFile)
             if(volume.stagerUrl)
             {
-                String mainFile = filenames[0]
                 def removeRasterUrl = "${ volume.stagerUrl }/dataManager/removeRaster"
                 if ( !diskCleanupConfig.dryRun ) {
-                    def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ mainFile }" )
-                    http.request( POST ) { req ->
-                        response.failure = { resp, reader -> 
-                            log.error "Failure: ${ reader }" 
-                        }
-                        response.success = { resp, reader -> 
-                            log.info "Success: ${ reader }" 
-                            filenames.each{
-                                File file = new File(it)
-                                if(file.exists())
-                                {
-                                    file.delete() 
-                                }
+                    def http = new HTTPBuilder( "${ removeRasterUrl }?deleteFiles=true&filename=${ indexedMainFile }" )
+                    try{
+                        http.request( POST ) { req ->
+                            response.failure = { resp, reader -> 
+                                log.error "Failure: ${ reader }" 
                             }
-                            result = true
+                            response.success = { resp, reader -> 
+                                log.info "Success: ${ reader }" 
+                                deleteFilesFromDisk(filenames)
+                                result = true
+                            }
                         }
                     }
+                    catch(java.net.ConnectException e)
+                    {
+                        log.error("Unable to connect to url: ${removeRasterUrl}")
+                        result = false
+                    }
+
                 }
                 else
                 {
@@ -247,7 +241,38 @@ class DiskCleanupService {
                 // non native delete
                 // Note cascade deletes must be enabled or there will be problems
                 //
-                log.info "Non native delete not supported yet"
+                Sql sql = newSqlInstance(volume.dbInfo?.dataSource)
+                String sqlCommand = "DELETE FROM ${volume.dbInfo.tableName} where ${volume.dbInfo.filenameColumn} = '${indexedMainFile}';"
+
+                try{
+                    if(!diskCleanupConfig.dryRun)
+                    {
+                        Boolean allDeleted = true
+                        sql?.execute(sqlCommand)
+                        deleteFilesFromDisk(filenames)
+                        result = allDeleted;
+                    }
+                    else
+                    {
+                        sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName} where ${volume.dbInfo.filenameColumn} = '${indexedMainFile}';"                        
+                        def row = sql.firstRow(sqlCommand)
+                        if(row)
+                        {
+                            log.info "Dry Run: Removing file ${indexedMainFile} from table ${volume.dbInfo.tableName}"
+                            log.info "Dry Run: Removing files from disk ${filenames}"
+                        }
+                        else
+                        {
+                            log.info "Dry run: file ${indexedMainFile} does not exist in the table"
+                        }
+
+                    }
+                }
+                catch(e)
+                {
+                    log.error(e)
+                }
+                sql?.close()
             }
         }
 
@@ -255,34 +280,47 @@ class DiskCleanupService {
     }
 
     def removeStaleEntries(DiskCleanupConfig.Volume volume) {
+       String repository = volume.localRepository
        log.info "removeStaleEntries is not enabled at this time"
-
-/*
-        if(volume.dbInfo?.dataSource)
+/*        if(volume.dbInfo?.dataSource)
         {
-            def sql = Sql.newInstance( volume.dbInfo?.dataSource )
+            def mainFiles = []
+            def sql = newSqlInstance( volume.dbInfo?.dataSource )
             def sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName};"
-            sql.eachRow( sqlCommand ) {
+            sql?.eachRow( sqlCommand ) {
                 def filename = it.filename
 
                 def file = new File( filename )
-                if ( !file.exists() ) {
-                    deleteFiles([ filename ])
+                File localFile = indexedToLocal(volume, file)
+                if ( !file.exists() ) 
+                {
+                    def files = getFilesToDelete(new File(file))
+
+                    if(volume.stagerUrl)
+                    {
+                        //deleteFiles(volume, files)
+                    }
+                    else
+                    {
+                        // this is for sanity check.  If the main file
+                        // is not present then we make sure
+                        // no support files are present
+                        //
+                        //deleteFilesFromDisk(files)
+                    }
                 }
             }
-            sql.close()
+            sql?.close()
         }
-*/
+        */
     }
 
     def removeStaleFiles(DiskCleanupConfig.Volume volume) {
-       String repository = volume.repository
        log.info "removeStaleFiles is not enabled at this time"
 /*        
-        def sql = Sql.newInstance( volume.dbInfo?.dataSource )
-        def sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName} ORDER BY ${volume.dbInfo.lruDateColumn} ASC;"
+        def sqlCommand = "SELECT ${volume.dbInfo.filenameColumn} FROM ${volume.dbInfo.tableName} ORDER BY ${volume.dbInfo.lruDateColumn} DESC;"
         def filenames = []
-        sql.eachRow( sqlCommand ) {
+        sql?.eachRow( sqlCommand ) {
             filenames.push( it.filename );
         }
         def newestFileDate = new File( filenames.last() ).lastModified()
@@ -292,10 +330,10 @@ class DiskCleanupService {
         def staleFileDate = newestStaleFileDate.getTime()
 
         def rasterEntryFiles = []
-        sql.eachRow( "SELECT name FROM raster_entry_file;" ) {
+        sql?.eachRow( "SELECT name FROM raster_entry_file;" ) {
             rasterEntryFiles.push( it.name )
         }
-        sql.close()
+        sql?.close()
 
         def diskVolume = grailsApplication.config.diskVolume
         def files = []
