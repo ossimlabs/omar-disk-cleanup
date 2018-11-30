@@ -15,7 +15,9 @@ omar:
             # This will allow us to have a different local mount than 
             # what is indexed in the tables
             localRepository: /data/s3
-            # indexed repository that is stored in the database.
+            # indexed repository that is stored in the database.  We can use this
+            # to replace substrings when going to and from local and indexed file
+            # repositories.
             indexedRepository: /data/s3
             # The disk space percentage to reach before deletetion stops
             minDiskLimit: 0.94
