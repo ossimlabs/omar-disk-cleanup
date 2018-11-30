@@ -177,7 +177,8 @@ class DiskCleanupService {
             log.info "Performing Dry Run......${new Date()}"
         }
         diskCleanupConfig.volumes?.each{volume ->
-            if(volume.localRepository?.exists())
+            
+            if(volume.localRepository&&(new File(volume.localRepository).exists()))
             {
                 cleanupVolume(volume)
             }
