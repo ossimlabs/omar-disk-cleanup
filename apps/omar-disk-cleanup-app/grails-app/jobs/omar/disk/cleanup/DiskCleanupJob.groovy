@@ -30,7 +30,8 @@ class DiskCleanupJob {
     }
 
     def execute() {
-        // this does a test and set
+        // this does a test and set.  We only want to run again
+        // if the previous run has finished
         if(!atomicIsRunning())
         {
             try{
@@ -38,9 +39,8 @@ class DiskCleanupJob {
             }
             catch(e)
             {
-                log.info e.toString()
+                log.error e.toString()
             }
-
             setRunning(false)
         }
     }

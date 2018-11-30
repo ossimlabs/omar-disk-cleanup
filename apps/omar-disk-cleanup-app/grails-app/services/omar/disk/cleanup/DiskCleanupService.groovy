@@ -162,7 +162,7 @@ class DiskCleanupService {
                     done = true
                     message.status = 400
                     message.statusMessage = "All data was removed and can't free up anymore disk space"
-                    log.info "All data was removed!"
+                    //log.info "All data was removed!"
                 }
             }
 
@@ -183,7 +183,7 @@ class DiskCleanupService {
             }
             else
             {
-                log.info "Repository '${volume.localRepository}' does not exist and will be skipped"
+               logJson([status: 404, statusMessage: "Repository '${volume.localRepository}' does not exist and will be skipped"])
             }
         }
     }
@@ -221,10 +221,10 @@ class DiskCleanupService {
                     try{
                         http.request( POST ) { req ->
                             response.failure = { resp, reader -> 
-                                log.error "Failure: ${ reader }" 
+                                logJson([status: 400, statusMessage: "${reader}"])
                             }
                             response.success = { resp, reader -> 
-                                log.info "Success: ${ reader }" 
+                                logJson([status: 200, statusMessage: "${reader}"])
                                 deleteFilesFromDisk(filenames)
                                 result = true
                             }
@@ -232,7 +232,8 @@ class DiskCleanupService {
                     }
                     catch(java.net.ConnectException e)
                     {
-                        log.error("Unable to connect to url: ${removeRasterUrl}")
+                        logJson([status:400, statusMessage: "Unable to connect to url: ${removeRasterUrl}"])
+
                         result = false
                     }
 
@@ -277,7 +278,7 @@ class DiskCleanupService {
                 }
                 catch(e)
                 {
-                    log.error(e)
+                    logJson([status:400, statusMessage: e.toString()])
                 }
                 sql?.close()
             }
