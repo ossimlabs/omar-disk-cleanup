@@ -6,38 +6,38 @@ omar:
         # A boolean to delete files on the volume older than the oldest ingested raster entry
         deleteStaleFiles: false
         # Whether or not you actually want to delete files and database entries
-        dryRun: true
+        dryRun: false
         # How often ( in  milliseconds ) to run
         repeatInterval: 60000
-        volumes:
-          -
+        # volumes:
+        #   -
             # local repository for the mounted drive on the disk cleanup.
             # This will allow us to have a different local mount than 
             # what is indexed in the tables
-            localRepository: /data/s3
+#            localRepository: /data/s3
             # indexed repository that is stored in the database.  We can use this
             # to replace substrings when going to and from local and indexed file
             # repositories.
-            indexedRepository: /data/s3
+#            indexedRepository: /data/s3
             # The disk space percentage to reach before deletetion stops
-            minDiskLimit: 0.94
+#            minDiskLimit: 0.94
             # The maximum disk space percentage that can be reached before deletion begins 
-            maxDiskLimit: 0.96
+#            maxDiskLimit: 0.96
             # if this is a native OMAR database then we will be able to
             # use the omar-stager for deletion.   If this is not backed by
             # omar then leave this entry blank
-            stagerUrl: https://localhost:8080/omar-stager
+#            stagerUrl: https://localhost:8080/omar-stager
             # for every Volume we will allow for a SQL connection string.
             # this will support traversing tables in different databases
-            dbInfo:
-              dataSource:
-                url: jdbc:postgresql://localhost:5432/omar_db
-                driverClassName: org.postgresql.Driver
-                user: postgres
-                password: postgres
-              tableName: raster_entry
-              filenameColumn: filename
-              dateColumn: ingest_date
+#            dbInfo:
+#              dataSource:
+#                url: jdbc:postgresql://localhost:5432/omar_db
+#                driverClassName: org.postgresql.Driver
+#                user: postgres
+#                password: postgres
+#              tableName: raster_entry
+#              filenameColumn: filename
+#              dateColumn: ingest_date
 
 ---
 grails:
