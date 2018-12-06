@@ -37,7 +37,7 @@ omar:
 #                password: postgres
 #              tableName: raster_entry
 #              filenameColumn: filename
-#              dateColumn: ingest_date
+#              sortColumn: ingest_date
 
 ---
 grails:
