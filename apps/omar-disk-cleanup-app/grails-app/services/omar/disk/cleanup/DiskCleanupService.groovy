@@ -164,6 +164,10 @@ class DiskCleanupService {
                     message.statusMessage = "All data was removed and can't free up anymore disk space"
                     //log.info "All data was removed!"
                 }
+                if(diskCleanupConfig.dryRun)
+                {
+                    done = true;
+                }
             }
 
             sql?.close()
