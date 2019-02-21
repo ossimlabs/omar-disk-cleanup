@@ -1,14 +1,9 @@
 pluginManagement {
   repositories {
-    maven { url "${ System.getenv('REPOSITORY_MANAGER_URL') }/ossim-deps" }
-    gradlePluginPortal()
+    maven { url ossimMavenProxy }
   }
 }
 
-def final O2_DEV_HOME = System.getenv('O2_DEV_HOME')
+include 'omar-disk-cleanup-app'
 
-if ( O2_DEV_HOME ) {
-    include 'omar-disk-cleanup-app'
-
-    project(':omar-disk-cleanup-app').projectDir = "${O2_DEV_HOME}/omar-disk-cleanup/apps/omar-disk-cleanup-app" as File
-}
+project(':omar-disk-cleanup-app').projectDir = "${rootProject.projectDir}/apps/omar-disk-cleanup-app" as File

@@ -1,22 +1,14 @@
 buildscript {
-    ext {
-        grailsVersion = project.grailsVersion
-        baseImage = "omar-ossim-base"
-    }
-    if( System.env.OMAR_COMMON_PROPERTIES ) {
-        apply from: System.env.OMAR_COMMON_PROPERTIES
-    }
     repositories {
-        maven { url "${ossimMavenProxy}" }
-        if( !System.env.WWW_CONNECTED || Boolean.parseBoolean( System.env.WWW_CONNECTED ) ) {
-            mavenLocal()
-            maven { url "https://repo.grails.org/grails/core" }
-        }
+        mavenLocal()
+        maven { url ossimMavenProxy }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
+        classpath 'io.ossim:gradleDefaults:1.5-SNAPSHOT'
     }
 }
 
@@ -32,20 +24,20 @@ apply plugin:"org.grails.grails-gsp"
 apply plugin: "java"
 apply plugin: "maven-publish"
 
-group "io.ossim.omar.apps"
-
-ext {
-    grailsVersion = project.grailsVersion
-    gradleWrapperVersion = project.gradleWrapperVersion
-}
-
 repositories {
-    maven { url "${ossimMavenProxy}" }
-    if( !System.env.WWW_CONNECTED || Boolean.parseBoolean( System.env.WWW_CONNECTED ) ) {
-        mavenLocal()
-        maven { url "https://repo.grails.org/grails/core" }
-    }
+    mavenLocal()
+    maven { url ossimMavenProxy }
 }
+
+io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
+io.ossim.gradleDefaults.Variables.setVersionVariables(project)
+dockerBuildDir="${rootProject.projectDir}/docker"
+version "${buildVersion}-${buildVersionTag}"
+jarDestination = "${projectDir}/build/libs/${project.name}-${version}.jar"
+io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
+io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)
+io.ossim.gradleDefaults.Docker.addDockerTasks(project, dockerRegistryUrl, dockerRegistryUsername, dockerRegistryPassword, name, dockerImageTag, dockerBuildDir, jarDestination, ["BASE_IMAGE": dockerBaseImage])
+io.ossim.gradleDefaults.Openshift.addOpenshiftTasks(project, openshiftUrl, openshiftUsername, openshiftPassword, openshiftProjectName, openshiftServiceName,  dockerRegistryUrl, name, dockerImageTag)
 
 dependencyManagement {
     imports {
@@ -106,12 +98,4 @@ task wrapper(type: Wrapper) {
 assets {
     minifyJs = true
     minifyCss = true
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
 }
